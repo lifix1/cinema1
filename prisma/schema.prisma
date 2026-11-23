@@ -7,10 +7,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// -------------------------------------------------------------
-// Перечисления (Enums)
-// -------------------------------------------------------------
-
 enum Role {
   CUSTOMER
   ADMIN
@@ -48,10 +44,6 @@ enum PaymentStatus {
   PAID
   REFUNDED
 }
-
-// -------------------------------------------------------------
-// Модели предметной области (Models)
-// -------------------------------------------------------------
 
 model User {
   id           String    @id @default(uuid())
@@ -198,7 +190,6 @@ model BookingSeat {
   session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   seat    Seat    @relation(fields: [seatId], references: [id], onDelete: Restrict)
 
-  // Гарантия защиты от овербукинга: одно и то же место на сеанс не может быть куплено дважды
   @@unique([sessionId, seatId])
   @@index([bookingId])
   @@map("booking_seats")

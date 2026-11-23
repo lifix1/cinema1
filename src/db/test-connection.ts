@@ -32,7 +32,6 @@ async function checkDatabaseConnection() {
   const startTime = Date.now();
 
   try {
-    // Выполняем контрольный нативный запрос к PostgreSQL
     const result = await prisma.$queryRaw<Array<{
       connected: number;
       pg_version: string;
