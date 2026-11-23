@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Предотвращение создания множественных экземпляров клиента в development-режиме
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 export const prisma =

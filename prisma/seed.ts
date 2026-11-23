@@ -6,8 +6,12 @@ dotenv.config();
 const prisma = new PrismaClient();
 
 async function main() {
+  console.log('================================================================');
+  console.log('  [Задание 2] Наполнение базы данных (Prisma Seed)');
+  console.log('================================================================\n');
 
-  console.log('Очистка существующих тестовых данных...');
+  console.log('1. Очистка существующих тестовых данных...');
+  // Удаляем в обратном порядке зависимостей
   await prisma.bookingSeat.deleteMany();
   await prisma.booking.deleteMany();
   await prisma.review.deleteMany();
@@ -18,8 +22,12 @@ async function main() {
   await prisma.movie.deleteMany();
   await prisma.genre.deleteMany();
   await prisma.user.deleteMany();
+  console.log('✓ Таблицы успешно очищены.\n');
 
-  console.log('Добавление пользователей (users)...');
+  // -------------------------------------------------------------
+  // 1. Создание пользователей (Таблица: users, 3 записи)
+  // -------------------------------------------------------------
+  console.log('2. Добавление пользователей (users)...');
   const userAdmin = await prisma.user.create({
     data: {
       email: 'admin@lumiere.ru',
@@ -52,9 +60,11 @@ async function main() {
       role: Role.CUSTOMER,
     },
   });
-  console.log(`Создано пользователей: 3 (${userAdmin.email}, ${userManager.email}, ${userCustomer.email})`);
+  console.log(`✓ Создано пользователей: 3 (${userAdmin.email}, ${userManager.email}, ${userCustomer.email})`);
 
-
+  // -------------------------------------------------------------
+  // 2. Создание жанров (Таблица: genres, 3 записи)
+  // -------------------------------------------------------------
   console.log('3. Добавление жанров (genres)...');
   const genreAction = await prisma.genre.create({
     data: { name: 'Боевик', slug: 'action' },
@@ -65,9 +75,12 @@ async function main() {
   const genreAnimation = await prisma.genre.create({
     data: { name: 'Анимация', slug: 'animation' },
   });
-  console.log(`Создано жанров: 3 (${genreAction.name}, ${genreSciFi.name}, ${genreAnimation.name})`);
+  console.log(`✓ Создано жанров: 3 (${genreAction.name}, ${genreSciFi.name}, ${genreAnimation.name})`);
 
-
+  // -------------------------------------------------------------
+  // 3. Создание фильмов (Таблица: movies, 3 записи)
+  // -------------------------------------------------------------
+  console.log('4. Добавление фильмов (movies)...');
   const movieWick = await prisma.movie.create({
     data: {
       tmdbId: 603692,
@@ -121,9 +134,12 @@ async function main() {
       },
     },
   });
-  console.log(`Создано фильмов: 3 («${movieWick.title}», «${movieInterstellar.title}», «${movieRaya.title}»)`);
+  console.log(`✓ Создано фильмов: 3 («${movieWick.title}», «${movieInterstellar.title}», «${movieRaya.title}»)`);
 
-  console.log('Добавление залов и кресел (halls, seats)...');
+  // -------------------------------------------------------------
+  // 4. Создание залов и кресел (Таблицы: halls, seats, 3 зала)
+  // -------------------------------------------------------------
+  console.log('5. Добавление залов и кресел (halls, seats)...');
   const hallImax = await prisma.hall.create({
     data: {
       name: 'Зал 1 — IMAX Laser',
@@ -154,6 +170,7 @@ async function main() {
     },
   });
 
+  // Заполняем кресла для Зала 1 (3 ряда по 8 мест)
   const imaxSeats = [];
   for (let r = 1; r <= 3; r++) {
     for (let s = 1; s <= 8; s++) {
@@ -167,6 +184,7 @@ async function main() {
   }
   await prisma.seat.createMany({ data: imaxSeats });
 
+  // Заполняем кресла для Зала 2 (3 ряда по 6 мест)
   const dolbySeats = [];
   for (let r = 1; r <= 3; r++) {
     for (let s = 1; s <= 6; s++) {
@@ -180,6 +198,7 @@ async function main() {
   }
   await prisma.seat.createMany({ data: dolbySeats });
 
+  // Заполняем кресла для Зала 3 VIP (2 ряда по 6 мест)
   const vipSeats = [];
   for (let r = 1; r <= 2; r++) {
     for (let s = 1; s <= 6; s++) {
@@ -192,9 +211,12 @@ async function main() {
     }
   }
   await prisma.seat.createMany({ data: vipSeats });
-  console.log(`Создано залов: 3, инициализированы кресла (Standard и VIP)`);
+  console.log(`✓ Создано залов: 3, инициализированы кресла (Standard и VIP)`);
 
-  console.log('Добавление сеансов (sessions)...');
+  // -------------------------------------------------------------
+  // 5. Создание сеансов (Таблица: sessions, 3 записи)
+  // -------------------------------------------------------------
+  console.log('6. Добавление сеансов (sessions)...');
   const now = new Date();
   
   const tomorrow19 = new Date(now);
@@ -253,10 +275,14 @@ async function main() {
       status: SessionStatus.SCHEDULED,
     },
   });
-  console.log(`Создано сеансов: 3`);
+  console.log(`✓ Создано сеансов: 3`);
 
-  console.log('Добавление бронирований и билетов (bookings, booking_seats)...');
+  // -------------------------------------------------------------
+  // 6. Создание бронирований и билетов (Таблицы: bookings, booking_seats, 2 брони)
+  // -------------------------------------------------------------
+  console.log('7. Добавление бронирований и билетов (bookings, booking_seats)...');
   
+  // Получаем кресла для бронирования
   const bookedSeatsSession1 = await prisma.seat.findMany({
     where: { hallId: hallImax.id, row: 2, number: { in: [4, 5] } },
   });
@@ -269,7 +295,7 @@ async function main() {
       customerEmail: 'customer@lumiere.ru',
       customerPhone: '+7 (999) 777-88-99',
       sessionId: session1.id,
-      totalAmount: 1300.0, 
+      totalAmount: 1300.0, // 2 места x 650.00
       status: BookingStatus.CONFIRMED,
       paymentStatus: PaymentStatus.PAID,
       seats: {
@@ -306,9 +332,12 @@ async function main() {
       },
     },
   });
-  console.log(`Создано бронирований: 2 (Билетов: 3 места, коды: ${booking1.bookingCode}, ${booking2.bookingCode})`);
+  console.log(`✓ Создано бронирований: 2 (Билетов: 3 места, коды: ${booking1.bookingCode}, ${booking2.bookingCode})`);
 
-  console.log('Добавление отзывов (reviews)...');
+  // -------------------------------------------------------------
+  // 7. Создание отзывов (Таблица: reviews, 3 записи)
+  // -------------------------------------------------------------
+  console.log('8. Добавление отзывов (reviews)...');
   await prisma.review.create({
     data: {
       movieId: movieWick.id,
@@ -338,7 +367,12 @@ async function main() {
       isPublished: true,
     },
   });
+  console.log(`✓ Создано отзывов: 3`);
 
+  console.log('\n================================================================');
+  console.log('✅ SEED УСПЕШНО ЗАВЕРШЁН!');
+  console.log('Все таблицы базы данных заполнены осмысленными тестовыми данными.');
+  console.log('================================================================\n');
 }
 
 main()
