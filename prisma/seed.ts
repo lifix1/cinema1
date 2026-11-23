@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('================================================================');
-  console.log('  [Задание 2] Наполнение базы данных (Prisma Seed)');
+  console.log('  Наполнение базы данных (Prisma Seed)');
   console.log('================================================================\n');
 
   console.log('1. Очистка существующих тестовых данных...');
@@ -22,7 +22,7 @@ async function main() {
   await prisma.movie.deleteMany();
   await prisma.genre.deleteMany();
   await prisma.user.deleteMany();
-  console.log('✓ Таблицы успешно очищены.\n');
+  console.log('Таблицы успешно очищены.\n');
 
   // -------------------------------------------------------------
   // 1. Создание пользователей (Таблица: users, 3 записи)
@@ -60,7 +60,7 @@ async function main() {
       role: Role.CUSTOMER,
     },
   });
-  console.log(`✓ Создано пользователей: 3 (${userAdmin.email}, ${userManager.email}, ${userCustomer.email})`);
+  console.log(`Создано пользователей: 3 (${userAdmin.email}, ${userManager.email}, ${userCustomer.email})`);
 
   // -------------------------------------------------------------
   // 2. Создание жанров (Таблица: genres, 3 записи)
@@ -75,7 +75,7 @@ async function main() {
   const genreAnimation = await prisma.genre.create({
     data: { name: 'Анимация', slug: 'animation' },
   });
-  console.log(`✓ Создано жанров: 3 (${genreAction.name}, ${genreSciFi.name}, ${genreAnimation.name})`);
+  console.log(`Создано жанров: 3 (${genreAction.name}, ${genreSciFi.name}, ${genreAnimation.name})`);
 
   // -------------------------------------------------------------
   // 3. Создание фильмов (Таблица: movies, 3 записи)
@@ -134,7 +134,7 @@ async function main() {
       },
     },
   });
-  console.log(`✓ Создано фильмов: 3 («${movieWick.title}», «${movieInterstellar.title}», «${movieRaya.title}»)`);
+  console.log(`Создано фильмов: 3 («${movieWick.title}», «${movieInterstellar.title}», «${movieRaya.title}»)`);
 
   // -------------------------------------------------------------
   // 4. Создание залов и кресел (Таблицы: halls, seats, 3 зала)
@@ -211,7 +211,7 @@ async function main() {
     }
   }
   await prisma.seat.createMany({ data: vipSeats });
-  console.log(`✓ Создано залов: 3, инициализированы кресла (Standard и VIP)`);
+  console.log(`Создано залов: 3, инициализированы кресла (Standard и VIP)`);
 
   // -------------------------------------------------------------
   // 5. Создание сеансов (Таблица: sessions, 3 записи)
@@ -275,7 +275,7 @@ async function main() {
       status: SessionStatus.SCHEDULED,
     },
   });
-  console.log(`✓ Создано сеансов: 3`);
+  console.log(`Создано сеансов: 3`);
 
   // -------------------------------------------------------------
   // 6. Создание бронирований и билетов (Таблицы: bookings, booking_seats, 2 брони)
@@ -332,7 +332,7 @@ async function main() {
       },
     },
   });
-  console.log(`✓ Создано бронирований: 2 (Билетов: 3 места, коды: ${booking1.bookingCode}, ${booking2.bookingCode})`);
+  console.log(`Создано бронирований: 2 (Билетов: 3 места, коды: ${booking1.bookingCode}, ${booking2.bookingCode})`);
 
   // -------------------------------------------------------------
   // 7. Создание отзывов (Таблица: reviews, 3 записи)
@@ -367,11 +367,11 @@ async function main() {
       isPublished: true,
     },
   });
-  console.log(`✓ Создано отзывов: 3`);
+  console.log(`Создано отзывов: 3`);
 
   console.log('\n================================================================');
-  console.log('✅ SEED УСПЕШНО ЗАВЕРШЁН!');
-  console.log('Все таблицы базы данных заполнены осмысленными тестовыми данными.');
+  console.log('SEED УСПЕШНО ЗАВЕРШЕН');
+  console.log('Все таблицы базы данных заполнены тестовыми данными.');
   console.log('================================================================\n');
 }
 

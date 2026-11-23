@@ -22,7 +22,7 @@ function maskDatabaseUrl(url?: string): string {
 
 async function checkDatabaseConnection() {
   console.log('\n================================================================');
-  console.log('  [Задание 1] Проверка подключения к базе данных PostgreSQL');
+  console.log('  Проверка подключения к базе данных PostgreSQL');
   console.log('================================================================');
   
   const rawUrl = process.env.DATABASE_URL;
@@ -49,25 +49,24 @@ async function checkDatabaseConnection() {
     const latency = Date.now() - startTime;
     const dbInfo = result[0];
 
-    console.log('\n✅ УСПЕШНОЕ ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ!');
+    console.log('\nУСПЕШНОЕ ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ');
     console.log('----------------------------------------------------------------');
-    console.log(`• Статус:               ONLINE (Соединение активно)`);
-    console.log(`• Время отклика:        ${latency} ms`);
-    console.log(`• Имя базы данных:      ${dbInfo?.db_name || 'lumiere_db'}`);
-    console.log(`• Пользователь СУБД:    ${dbInfo?.current_user || 'postgres'}`);
-    console.log(`• Версия PostgreSQL:    ${dbInfo?.pg_version?.split(' on ')[0] || 'PostgreSQL'}`);
-    console.log('----------------------------------------------------------------');
-    console.log('Задание 1 выполнено: Проект успешно подключен к PostgreSQL.\n');
+    console.log(`- Статус:               ONLINE (Соединение активно)`);
+    console.log(`- Время отклика:        ${latency} ms`);
+    console.log(`- Имя базы данных:      ${dbInfo?.db_name || 'lumiere_db'}`);
+    console.log(`- Пользователь СУБД:    ${dbInfo?.current_user || 'postgres'}`);
+    console.log(`- Версия PostgreSQL:    ${dbInfo?.pg_version?.split(' on ')[0] || 'PostgreSQL'}`);
+    console.log('----------------------------------------------------------------\n');
     process.exit(0);
   } catch (error: any) {
     const latency = Date.now() - startTime;
-    console.error('\n❌ ОШИБКА ПОДКЛЮЧЕНИЯ К БАЗЕ ДАННЫХ!');
+    console.error('\nОШИБКА ПОДКЛЮЧЕНИЯ К БАЗЕ ДАННЫХ');
     console.error('----------------------------------------------------------------');
-    console.error(`• Время до ошибки:      ${latency} ms`);
-    console.error(`• Код ошибки Prisma:    ${error?.code || 'UNKNOWN'}`);
-    console.error(`• Сообщение:            ${error?.message || error}`);
+    console.error(`- Время до ошибки:      ${latency} ms`);
+    console.error(`- Код ошибки Prisma:    ${error?.code || 'UNKNOWN'}`);
+    console.error(`- Сообщение:            ${error?.message || error}`);
     console.error('----------------------------------------------------------------');
-    console.log('\n📋 Рекомендации по устранению ошибки:');
+    console.log('\nРекомендации по устранению ошибки:');
     if (error?.code === 'P1001') {
       console.log('  1. Сервер PostgreSQL не запущен или недоступен по указанному хосту/порту.');
       console.log('     Запустите локальный контейнер: docker compose up -d');
