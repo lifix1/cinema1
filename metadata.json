@@ -1,0 +1,6 @@
+{
+  "name": "Lumière Cinema",
+  "description": "Кинотеатр с возможностью бронирования билетов, личным кабинетом пользователя, отзывами и админ-панелью для управления фильмами, залами и сеансами.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

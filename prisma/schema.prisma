@@ -1,0 +1,222 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// -------------------------------------------------------------
+// Перечисления (Enums)
+// -------------------------------------------------------------
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  MANAGER
+  CASHIER
+}
+
+enum SeatType {
+  STANDARD
+  VIP
+  ACCESSIBLE
+}
+
+enum SessionType {
+  FORMAT_2D
+  FORMAT_3D
+  FORMAT_IMAX
+}
+
+enum SessionStatus {
+  SCHEDULED
+  OPEN
+  CLOSED
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+// -------------------------------------------------------------
+// Модели предметной области (Models)
+// -------------------------------------------------------------
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  phone        String?
+  role         Role      @default(CUSTOMER)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  bookings     Booking[]
+  reviews      Review[]
+
+  @@map("users")
+}
+
+model Movie {
+  id              String       @id @default(uuid())
+  tmdbId          Int?         @unique @map("tmdb_id")
+  title           String
+  originalTitle   String?      @map("original_title")
+  description     String?
+  durationMinutes Int          @map("duration_minutes")
+  releaseYear     Int          @map("release_year")
+  posterUrl       String?      @map("poster_url")
+  backdropUrl     String?      @map("backdrop_url")
+  ageRating       String?      @map("age_rating")
+  rating          Float        @default(0.0)
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  genres          MovieGenre[]
+  sessions        Session[]
+  reviews         Review[]
+
+  @@map("movies")
+}
+
+model Genre {
+  id     Int          @id @default(autoincrement())
+  name   String       @unique
+  slug   String       @unique
+  movies MovieGenre[]
+
+  @@map("genres")
+}
+
+model MovieGenre {
+  movieId String @map("movie_id")
+  genreId Int    @map("genre_id")
+
+  movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([movieId, genreId])
+  @@map("movie_genres")
+}
+
+model Hall {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  totalSeats  Int       @map("total_seats")
+  screenType  String    @default("Standard") @map("screen_type")
+  soundSystem String    @default("Dolby Digital") @map("sound_system")
+  isActive    Boolean   @default(true) @map("is_active")
+
+  seats       Seat[]
+  sessions    Session[]
+
+  @@map("halls")
+}
+
+model Seat {
+  id       String   @id @default(uuid())
+  hallId   String   @map("hall_id")
+  row      Int
+  number   Int
+  seatType SeatType @default(STANDARD) @map("seat_type")
+  isActive Boolean  @default(true) @map("is_active")
+
+  hall         Hall          @relation(fields: [hallId], references: [id], onDelete: Cascade)
+  bookingSeats BookingSeat[]
+
+  @@unique([hallId, row, number])
+  @@map("seats")
+}
+
+model Session {
+  id          String        @id @default(uuid())
+  movieId     String        @map("movie_id")
+  hallId      String        @map("hall_id")
+  startTime   DateTime      @map("start_time")
+  endTime     DateTime      @map("end_time")
+  basePrice   Decimal       @map("base_price") @db.Decimal(10, 2)
+  sessionType SessionType   @default(FORMAT_2D) @map("session_type")
+  status      SessionStatus @default(SCHEDULED)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  movie        Movie         @relation(fields: [movieId], references: [id], onDelete: Restrict)
+  hall         Hall          @relation(fields: [hallId], references: [id], onDelete: Restrict)
+  bookings     Booking[]
+  bookingSeats BookingSeat[]
+
+  @@index([movieId])
+  @@index([hallId])
+  @@index([startTime])
+  @@map("sessions")
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  bookingCode   String        @unique @map("booking_code")
+  userId        String?       @map("user_id")
+  customerName  String        @map("customer_name")
+  customerEmail String        @map("customer_email")
+  customerPhone String        @map("customer_phone")
+  sessionId     String        @map("session_id")
+  totalAmount   Decimal       @map("total_amount") @db.Decimal(10, 2)
+  status        BookingStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(UNPAID) @map("payment_status")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  user    User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  session Session       @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  seats   BookingSeat[]
+
+  @@index([sessionId])
+  @@index([userId])
+  @@map("bookings")
+}
+
+model BookingSeat {
+  id        String  @id @default(uuid())
+  bookingId String  @map("booking_id")
+  sessionId String  @map("session_id")
+  seatId    String  @map("seat_id")
+  price     Decimal @db.Decimal(10, 2)
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  seat    Seat    @relation(fields: [seatId], references: [id], onDelete: Restrict)
+
+  // Гарантия защиты от овербукинга: одно и то же место на сеанс не может быть куплено дважды
+  @@unique([sessionId, seatId])
+  @@index([bookingId])
+  @@map("booking_seats")
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  movieId     String   @map("movie_id")
+  userId      String   @map("user_id")
+  rating      Int
+  text        String
+  isPublished Boolean  @default(true) @map("is_published")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([movieId, userId])
+  @@map("reviews")
+}
